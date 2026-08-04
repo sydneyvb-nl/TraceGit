@@ -52,7 +52,7 @@ async fn main() -> Result<()> {
         Commands::Blame { file, json } => inspect::cmd_blame(&file, json),
         Commands::PrReport { base, head } => inspect::cmd_pr_report(&base, &head),
         Commands::Policy { action } => match action {
-            PolicyActions::Check => policy::cmd_policy_check(),
+            PolicyActions::Check { json } => policy::cmd_policy_check(json),
             PolicyActions::Explain { rule_id } => policy::cmd_policy_explain(rule_id.as_deref()),
             PolicyActions::Pull {
                 org,

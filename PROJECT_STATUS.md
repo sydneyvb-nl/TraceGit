@@ -1,6 +1,6 @@
 # Tellur — Project Status & Agent Guide
 
-**Last updated:** 2026-07-13 (v0.1.0 published and verified)
+**Last updated:** 2026-08-04 (policy check enforcement)
 **Maintained by:** agents — alle agents mogen dit updaten
 **Repo:** github.com/sydneyvb-nl/tellur
 **Branch:** `codex/document-v0-1-0-release`
@@ -66,6 +66,13 @@ timeline are all shipped.
 has **no marking workflow on purpose** — review marking does not belong in the
 hub (user decision). Leave it as a forward-looking metric; do not add a hub-side
 "mark reviewed" action.
+
+> **2026-08-04 — Policy-check enforcement (issue #56).** `tellur policy check`
+> now evaluates every indexed attribution range against the default repository
+> policy instead of only printing the YAML configuration. Failed policy results
+> include severity, rule, file, and line range; any failure produces a non-zero
+> exit status for CI. `--json` provides a machine-readable report. An end-to-end
+> CLI test covers failing text/JSON output and the compliant success path.
 
 > **2026-07-13 — Aikido security remediation.** On
 > `codex/security-aikido-remediation`. Removed confirmed DOM XSS sinks from the
@@ -1322,19 +1329,19 @@ Deze onderdelen staan in de PRD maar zijn bewust overgeslagen of vereisen Sydney
 ## Huidige Test Status
 
 ```
-358 Rust tests, 0 failures, 0 clippy warnings; `cargo deny check` green.
-(verified 2026-07-13 via `cargo test`; Postgres tests no-op without `TELLUR_TEST_DATABASE_URL`)
-- core:      77  (75 library + 2 CLI-contract integration: schema/event round-trip, glob, storage, hash-chain verify+reseal,
+360 Rust tests, 0 failures, 0 clippy warnings; `cargo deny check` green.
+(verified 2026-08-04 via `cargo test`; Postgres tests no-op without `TELLUR_TEST_DATABASE_URL`)
+- core:      78  (76 library + 2 CLI-contract integration: schema/event round-trip, glob, storage, hash-chain verify+reseal,
              index session/attribution round-trip, capture pipeline, attribution,
              redaction, policy, export, PR report, team report, daemon/webhook)
 - adapters:  56  (Claude Code, Aider, Cursor, Codex, Copilot, Gemini CLI,
              Antigravity, Windsurf, JetBrains, Devin, Continue, Cline/Roo, Generic,
              + shared import loop)
-- cli:       53  (15 unit incl. setup URL validation, Codex patch-path parsing,
+- cli:       60  (20 unit incl. setup URL validation, Codex patch-path parsing,
              push high-water-mark/tombstones, prompt-excerpt redaction,
-             host/segment encoding; 38 integration incl. unified setup/package
+             host/segment encoding; 40 integration incl. unified setup/package
              status, exact/claimed notes, single-owner setup, live hook capture,
-             and policy pull)
+             policy pull, and policy-check enforcement)
 - server:    166 (59 lib unit + 107 integration: auth/BOLA, ingest, repo RBAC,
              OIDC SSO + device login, SCIM users/groups, jobs, dashboard reads,
              attribution + tombstones, A12 source/blob proxy, dashboard routes,
