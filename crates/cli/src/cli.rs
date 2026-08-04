@@ -476,7 +476,11 @@ pub(crate) enum SetupActions {
 #[derive(Subcommand)]
 pub(crate) enum PolicyActions {
     /// Check all policies
-    Check,
+    Check {
+        /// Output machine-readable JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Explain what a policy does
     Explain {
         /// Policy rule ID

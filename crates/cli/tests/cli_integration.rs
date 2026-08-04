@@ -111,6 +111,95 @@ fn test_help() {
 }
 
 #[test]
+fn test_policy_check_evaluates_attributions_and_sets_exit_status() {
+    let dir = temp_repo();
+    require_binary()
+        .arg("init")
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+
+    let storage = RepoStorage::from_git_root(&dir).unwrap();
+    let index = TraceIndex::open(&storage.index_path).unwrap();
+    let mut range = AttributionRange {
+        range_id: "rng_policy_check".to_string(),
+        start_line: 4,
+        end_line: 8,
+        origin: Origin::Ai,
+        evidence_strength: EvidenceStrength::Recorded,
+        confidence: 1.0,
+        state: AttributionState::Exact,
+        session_id: "sess_policy_check".to_string(),
+        event_ids: vec![],
+        agent_id: "codex".to_string(),
+        model_id: None,
+        prompt_hash: None,
+        context_set_id: None,
+        policy_tags: vec![],
+        risk_tags: vec![],
+        risk_level: None,
+        tests_run: vec![],
+        tests_passed: false,
+        reviewer: None,
+        reviewed_at: None,
+    };
+    index
+        .index_attribution(
+            &range,
+            "src/auth/session.rs",
+            "blob_policy_check",
+            "2026-08-04T00:00:00Z",
+        )
+        .unwrap();
+
+    let text = require_binary()
+        .args(["policy", "check"])
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+    assert!(!text.status.success());
+    let stdout = String::from_utf8_lossy(&text.stdout);
+    assert!(stdout.contains("HIGH sensitive-path-review"));
+    assert!(stdout.contains("MEDIUM sensitive-path-tests"));
+    assert!(stdout.contains("src/auth/session.rs:4-8"));
+
+    let json = require_binary()
+        .args(["policy", "check", "--json"])
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+    assert!(!json.status.success());
+    let report: serde_json::Value = serde_json::from_slice(&json.stdout).unwrap();
+    assert_eq!(report["passed"], false);
+    assert_eq!(report["attributions_checked"], 1);
+    assert_eq!(report["findings"].as_array().unwrap().len(), 2);
+    assert_eq!(report["findings"][0]["file_path"], "src/auth/session.rs");
+
+    range.tests_run = vec!["cargo test".to_string()];
+    range.tests_passed = true;
+    range.reviewer = Some("human-reviewer".to_string());
+    range.reviewed_at = Some("2026-08-04T00:01:00Z".to_string());
+    index
+        .index_attribution(
+            &range,
+            "src/auth/session.rs",
+            "blob_policy_check",
+            "2026-08-04T00:01:00Z",
+        )
+        .unwrap();
+
+    let passing = require_binary()
+        .args(["policy", "check"])
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+    assert!(passing.status.success());
+    assert!(String::from_utf8_lossy(&passing.stdout).contains("No policy violations found"));
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn test_binary_fallback_uses_platform_executable_suffix() {
     let path = tellur_binary();
     assert_eq!(

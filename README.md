@@ -179,6 +179,11 @@ Tellur supports repository policy, sensitive-path rules, native provenance
 bundles, Agent Trace output, SLSA v1.0 provenance, SPDX 2.3 AI annotations, and
 Git AI-compatible authorship notes.
 
+`tellur policy check` evaluates every currently indexed attribution range
+against `.tellur/policies/default.yml`. It exits non-zero when any policy
+requirement fails and prints the affected rule, severity, file, and line range.
+Use `tellur policy check --json` for a machine-readable CI result.
+
 ## Team Hub
 
 The Team Hub is an optional self-hosted server for organizations that need a
