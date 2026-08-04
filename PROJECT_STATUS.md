@@ -74,6 +74,13 @@ hub (user decision). Leave it as a forward-looking metric; do not add a hub-side
 > exit status for CI. `--json` provides a machine-readable report. An end-to-end
 > CLI test covers failing text/JSON output and the compliant success path.
 
+> **2026-08-04 — Parallel CLI test isolation (issue #57).** Reproduced the two
+> intermittent hook-test failures under a plain parallel `cargo test
+> --workspace`. The executable-detection test temporarily replaced the
+> process-wide `PATH`, so sibling tests could fail to find `git` or `sh`.
+> Extracted a path-list helper and made the test pass its sandbox path directly;
+> production behavior is unchanged and no test mutates `PATH`.
+
 > **2026-07-13 — Aikido security remediation.** On
 > `codex/security-aikido-remediation`. Removed confirmed DOM XSS sinks from the
 > embedded local dashboard by switching all API/import-driven rendering to DOM
