@@ -1,6 +1,6 @@
 # Tellur — Project Status & Agent Guide
 
-**Last updated:** 2026-07-13 (v0.1.0 published and verified)
+**Last updated:** 2026-08-04 (parallel CLI test isolation)
 **Maintained by:** agents — alle agents mogen dit updaten
 **Repo:** github.com/sydneyvb-nl/tellur
 **Branch:** `codex/document-v0-1-0-release`
@@ -66,6 +66,13 @@ timeline are all shipped.
 has **no marking workflow on purpose** — review marking does not belong in the
 hub (user decision). Leave it as a forward-looking metric; do not add a hub-side
 "mark reviewed" action.
+
+> **2026-08-04 — Parallel CLI test isolation (issue #57).** Reproduced the two
+> intermittent hook-test failures under a plain parallel `cargo test
+> --workspace`. The executable-detection test temporarily replaced the
+> process-wide `PATH`, so sibling tests could fail to find `git` or `sh`.
+> Extracted a path-list helper and made the test pass its sandbox path directly;
+> production behavior is unchanged and no test mutates `PATH`.
 
 > **2026-07-13 — Aikido security remediation.** On
 > `codex/security-aikido-remediation`. Removed confirmed DOM XSS sinks from the

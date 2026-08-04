@@ -169,7 +169,11 @@ fn executable_on_path(name: &str) -> bool {
     let Some(paths) = std::env::var_os("PATH") else {
         return false;
     };
-    std::env::split_paths(&paths).any(|dir| {
+    executable_on_paths(name, &paths)
+}
+
+fn executable_on_paths(name: &str, paths: &std::ffi::OsStr) -> bool {
+    std::env::split_paths(paths).any(|dir| {
         executable_candidates(name).any(|candidate| {
             let path = dir.join(candidate);
             is_executable_file(&path)
@@ -228,23 +232,13 @@ mod tests {
         let file = dir.join("codex");
         std::fs::write(&file, "#!/bin/sh\nexit 0\n").unwrap();
 
-        let old_path = std::env::var_os("PATH");
-        unsafe {
-            std::env::set_var("PATH", &dir);
-        }
-        assert!(!executable_on_path("codex"));
+        assert!(!executable_on_paths("codex", dir.as_os_str()));
 
         let mut perms = std::fs::metadata(&file).unwrap().permissions();
         perms.set_mode(0o755);
         std::fs::set_permissions(&file, perms).unwrap();
-        assert!(executable_on_path("codex"));
+        assert!(executable_on_paths("codex", dir.as_os_str()));
 
-        unsafe {
-            match old_path {
-                Some(path) => std::env::set_var("PATH", path),
-                None => std::env::remove_var("PATH"),
-            }
-        }
         let _ = std::fs::remove_dir_all(dir);
     }
 }
